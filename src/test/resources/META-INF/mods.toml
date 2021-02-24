@@ -1,0 +1,15 @@
+modLoader="javafml"
+loaderVersion="[35,)"
+
+license="BSD-3-Clause"
+
+[[mods]]
+modId="adventure-platform-forge-test"
+version="${file.jarVersion}"
+displayName="adventure-platform-forge-test"
+
+credits="KyoriPowered"
+
+authors="3TUSK"
+
+description="Test suits for adventure-platform-forge."

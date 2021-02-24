@@ -36,9 +36,11 @@ minecraft {
                 adventure_platform_forge {
                     source sourceSets.main
                 }
+                adventure_platform_forge_test {
+                    source sourceSets.test
+                }
             }
         }
-
         server {
             workingDirectory project.file('run_server')
             property 'forge.logging.console.level', 'info'
@@ -46,9 +48,12 @@ minecraft {
                 adventure_platform_forge {
                     source sourceSets.main
                 }
+                adventure_platform_forge_test {
+                    source sourceSets.test
+                }
             }
         }
-
+        // There is no data to generate, so the runs.data was removed to keep things compact.
     }
 }
 
