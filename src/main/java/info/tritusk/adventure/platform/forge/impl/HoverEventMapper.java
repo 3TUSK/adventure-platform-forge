@@ -16,7 +16,7 @@ public class HoverEventMapper {
             net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity> showEntityEvent
                     = (net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowEntity>) event;
             net.kyori.adventure.text.event.HoverEvent.ShowEntity original = showEntityEvent.value();
-            HoverEvent.EntityHover nativeValue = new HoverEvent.EntityHover(lookup(original.type()), original.id(), new ComponentWrapper(original.name()));
+            HoverEvent.EntityHover nativeValue = new HoverEvent.EntityHover(lookup(original.type()), original.id(), TextComponentMapper.toNative(original.name()));
             return new HoverEvent(HoverEvent.Action.SHOW_ENTITY, nativeValue);
         } else if (nativeAction == HoverEvent.Action.SHOW_ITEM) {
             net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowItem> showEntityEvent
@@ -34,7 +34,7 @@ public class HoverEventMapper {
         } else if (nativeAction == HoverEvent.Action.SHOW_TEXT) {
             net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.Component> showTextEvent
                     = (net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.Component>) event;
-            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentWrapper(showTextEvent.value()));
+            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponentMapper.toNative(showTextEvent.value()));
         } else {
             throw new IllegalArgumentException("Cannot handle unknown hover event type '" + event.action().toString() + "'");
         }
