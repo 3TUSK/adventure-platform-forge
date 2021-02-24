@@ -1,0 +1,154 @@
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+
+buildscript {
+    repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+
+version = '0.1.0'
+group = 'info.tritusk.adventure'
+archivesBaseName = 'adventure-platform-forge'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+compileJava {
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+minecraft {
+    mappings channel: 'snapshot', version: '20201028-1.16.3'
+    
+    runs {
+        client {
+            workingDirectory project.file('run_client') 
+            property 'forge.logging.console.level', 'info'
+            mods {
+                adventure_platform_forge {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run_server')
+            property 'forge.logging.console.level', 'info'
+            mods {
+                adventure_platform_forge {
+                    source sourceSets.main
+                }
+            }
+        }
+
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "sonatype-oss-snapshots"
+        url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.4-35.1.0'
+
+    implementation "net.kyori:adventure-api:4.4.0"
+    implementation "net.kyori:adventure-platform-api:4.0.0-SNAPSHOT"
+    implementation "net.kyori:adventure-text-serializer-plain:4.6.0-SNAPSHOT"
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "adventure",
+            "Specification-Vendor": "KyoriPowered",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor": "3TUSK",
+            "Implementation-Timestamp": DateTimeFormatter.ISO_INSTANT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
+publish.dependsOn('reobfJar')
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = "info.tritusk.adventure"
+            artifactId = "adventure-platform-forge"
+
+            artifact jar
+            pom {
+                name = 'adventure-platform-fabric'
+                description = 'Integration between adventure and Forge platform.'
+                url = 'https://github.com/3TUSK/adventure-platform-forge'
+                licenses {
+                    license {
+                        name = 'BSD-3-clause'
+                        url = 'https://github.com/3TUSK/adventure-platform-forge/blob/bleeding/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = '3TUSK'
+                        name = '3TUSK'
+                    }
+                }
+                issueManagement {
+                    system = 'GitHub Issues'
+                    url = 'https://github.com/3TUSK/adventure-platform-forge/issues'
+                }
+                scm {
+                    url = 'https://github.com/3TUSK/adventure-platform-forge'
+                    connection = 'scm:git:git://github.com/3TUSK/adventure-platform-forge.git'
+                    developerConnection = 'scm:git:git@github.com:3TUSK/adventure-platform-forge.git'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "archive"
+            url = "https://maven.hub.tritusk.info/releases"
+            credentials {
+                username = System.env.MAVEN_USERNAME
+                password = System.env.MAVEN_PASSWORD
+            }
+        }
+    }
+}
+
+tasks.withType(PublishToMavenRepository) {
+    onlyIf {
+        System.env.MAVEN_USERNAME && System.env.MAVEN_PASSWORD
+    }
+}
+
+/**
+ * A simple task to pass down the artifact name and path to other GitHub actions.
+ */
+task("githubActionOutput") {
+    onlyIf {
+        System.env.GITHUB_ACTIONS
+    }
+    doLast {
+        // getArchiveFile was introduced in Gradle 5.1 so we can't use it in 4.10.3
+        // https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/bundling/AbstractArchiveTask.html#getArchiveFile--
+        println "::set-output name=artifact_path::${jar.archivePath.absolutePath}"
+        println "::set-output name=artifact_name::${jar.archiveName}"
+    }
+}
